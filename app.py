@@ -213,18 +213,15 @@ with gr.Tab("📊 Dashboard"):
         gr.Markdown(
             "## Sales Overview"
         )
-
-        with gr.Row():
-
-            total_sales_display = gr.Textbox(
+        total_sales_display = gr.Textbox(
                 label="Total Sales",
                 interactive=False
-            )
+        )
 
-            total_quantity_display = gr.Textbox(
+        total_quantity_display = gr.Textbox(
                 label="Total Quantity Sold",
                 interactive=False
-            )
+        )
 
 
         gr.Markdown(
