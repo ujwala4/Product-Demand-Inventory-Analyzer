@@ -1,33 +1,24 @@
+import os
 import requests
 
-
-BASE_URL = "http://127.0.0.1:8000"
-
-
-
+BASE_URL = f"http://127.0.0.1:{os.environ.get('PORT', '8000')}"
 
 def handle_response(response):
-
     response.raise_for_status()
-
     return response.json()
 
 
 def get_sales():
-
     response = requests.get(
         f"{BASE_URL}/sales"
     )
-
     return handle_response(response)
 
 
 def get_sale(transaction_id):
-
     response = requests.get(
         f"{BASE_URL}/sales/{transaction_id}"
     )
-
     return handle_response(response)
 
 
@@ -41,32 +32,15 @@ def create_sale(
     quantity,
     price_per_unit
 ):
-
     data = {
-
-        "transaction_id":
-            transaction_id,
-
-        "date":
-            date,
-
-        "customer_id":
-            customer_id,
-
-        "gender":
-            gender,
-
-        "age":
-            age,
-
-        "product_category":
-            product_category,
-
-        "quantity":
-            quantity,
-
-        "price_per_unit":
-            price_per_unit
+        "transaction_id": transaction_id,
+        "date": date,
+        "customer_id": customer_id,
+        "gender": gender,
+        "age": age,
+        "product_category": product_category,
+        "quantity": quantity,
+        "price_per_unit": price_per_unit
     }
 
     response = requests.post(
@@ -82,14 +56,9 @@ def update_sale(
     quantity,
     price_per_unit
 ):
-
     data = {
-
-        "quantity":
-            quantity,
-
-        "price_per_unit":
-            price_per_unit
+        "quantity": quantity,
+        "price_per_unit": price_per_unit
     }
 
     response = requests.put(
@@ -101,7 +70,6 @@ def update_sale(
 
 
 def delete_sale(transaction_id):
-
     response = requests.delete(
         f"{BASE_URL}/sales/{transaction_id}"
     )
@@ -110,7 +78,6 @@ def delete_sale(transaction_id):
 
 
 def search_sales(search_text):
-
     response = requests.get(
         f"{BASE_URL}/sales/search/{search_text}"
     )
@@ -119,7 +86,6 @@ def search_sales(search_text):
 
 
 def get_total_sales():
-
     response = requests.get(
         f"{BASE_URL}/analytics/total-sales"
     )
@@ -128,7 +94,6 @@ def get_total_sales():
 
 
 def get_total_quantity():
-
     response = requests.get(
         f"{BASE_URL}/analytics/total-quantity"
     )
@@ -137,15 +102,14 @@ def get_total_quantity():
 
 
 def get_best_selling():
-
     response = requests.get(
         f"{BASE_URL}/analytics/best-selling"
     )
 
     return handle_response(response)
 
-def get_slow_moving():
 
+def get_slow_moving():
     response = requests.get(
         f"{BASE_URL}/analytics/slow-moving"
     )
@@ -154,7 +118,6 @@ def get_slow_moving():
 
 
 def get_category_sales():
-
     response = requests.get(
         f"{BASE_URL}/analytics/category-sales"
     )
@@ -163,7 +126,6 @@ def get_category_sales():
 
 
 def get_monthly_sales():
-
     response = requests.get(
         f"{BASE_URL}/analytics/monthly-sales"
     )
@@ -172,7 +134,6 @@ def get_monthly_sales():
 
 
 def get_summary():
-
     response = requests.get(
         f"{BASE_URL}/analytics/summary"
     )
