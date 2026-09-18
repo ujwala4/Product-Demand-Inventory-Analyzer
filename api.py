@@ -1,419 +1,265 @@
-from fastapi import FastAPI, HTTPException
-from pydantic import BaseModel
-
+import gradio as gr
 from crud import (
     add_sale,
     get_all_sales,
-    get_sale,
     update_sale,
     delete_sale,
     search_sales
 )
 
-from analysis import (
-    calculate_total_sales,
-    calculate_total_quantity,
-    best_selling_categories,
-    slow_moving_categories,
-    sales_by_category,
-    monthly_sales
-)
 
-
-app = FastAPI(
-    title="Inventory & Sales Analyzer API",
-    description="REST API for managing sales and analyzing retail data",
-    version="1.0.0"
-)
-
-
-class Sale(BaseModel):
-
-    transaction_id: int
-    date: str
-    customer_id: str
-    gender: str
-    age: int
-    product_category: str
-    quantity: int
-    price_per_unit: float
-
-
-class SaleUpdate(BaseModel):
-
-    quantity: int
-    price_per_unit: float
-
-
-@app.get("/")
-def home():
-
-    return {
-        "message": "Inventory & Sales Analyzer API is running",
-        "docs": "/docs"
-    }
-
-
-@app.get("/sales")
-def get_sales():
-
-    try:
-
-        df = get_all_sales()
-
-        return df.to_dict(
-            orient="records"
-        )
-
-    except Exception as e:
-
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
-
-
-@app.get("/sales/{transaction_id}")
-def get_single_sale(transaction_id: int):
-
-    try:
-
-        df = get_sale(
-            transaction_id
-        )
-
-        if df.empty:
-
-            raise HTTPException(
-                status_code=404,
-                detail="Transaction not found"
-            )
-
-        return df.iloc[0].to_dict()
-
-    except HTTPException:
-
-        raise
-
-    except Exception as e:
-
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
-
-
-@app.post("/sales")
-def create_sale(sale: Sale):
-
-    try:
-
-        result = add_sale(
-            sale.transaction_id,
-            sale.date,
-            sale.customer_id,
-            sale.gender,
-            sale.age,
-            sale.product_category,
-            sale.quantity,
-            sale.price_per_unit
-        )
-
-        return {
-            "message": result
-        }
-
-    except Exception as e:
-
-        raise HTTPException(
-            status_code=400,
-            detail=str(e)
-        )
-
-
-@app.put("/sales/{transaction_id}")
-def update_existing_sale(
-    transaction_id: int,
-    sale: SaleUpdate
+def add_sale_ui(
+    transaction_id,
+    date,
+    customer_id,
+    gender,
+    age,
+    product_category,
+    quantity,
+    price_per_unit
 ):
-
     try:
+        result = add_sale(
+            transaction_id,
+            date,
+            customer_id,
+            gender,
+            age,
+            product_category,
+            quantity,
+            price_per_unit
+        )
 
+        return result
+
+    except Exception as e:
+        return f"Error: {e}"
+
+
+def get_sales_ui():
+    try:
+        return get_all_sales()
+
+    except Exception as e:
+        return f"Error: {e}"
+
+
+def update_sale_ui(
+    transaction_id,
+    quantity,
+    price_per_unit
+):
+    try:
         result = update_sale(
             transaction_id,
-            sale.quantity,
-            sale.price_per_unit
+            quantity,
+            price_per_unit
         )
 
-        if result == "Transaction not found.":
+        return result
 
-            raise HTTPException(
-                status_code=404,
-                detail="Transaction not found"
+    except Exception as e:
+        return f"Error: {e}"
+
+
+def delete_sale_ui(transaction_id):
+    try:
+        result = delete_sale(transaction_id)
+
+        return result
+
+    except Exception as e:
+        return f"Error: {e}"
+
+
+def search_sales_ui(search_text):
+    try:
+        return search_sales(search_text)
+
+    except Exception as e:
+        return f"Error: {e}"
+
+
+with gr.Blocks(title="Inventory & Sales Analyzer") as app:
+
+    gr.Markdown(
+        """
+        # 🛒 Inventory & Sales Analyzer
+
+        Manage sales using Python, SQLite and Gradio.
+        """
+    )
+
+    with gr.Tab("Sales"):
+
+        gr.Markdown("## ➕ Add New Sale")
+
+        with gr.Row():
+
+            transaction_id = gr.Number(
+                label="Transaction ID",
+                precision=0
             )
 
-        return {
-            "message": result
-        }
-
-    except HTTPException:
-
-        raise
-
-    except Exception as e:
-
-        raise HTTPException(
-            status_code=400,
-            detail=str(e)
-        )
-
-
-@app.delete("/sales/{transaction_id}")
-def delete_existing_sale(
-    transaction_id: int
-):
-
-    try:
-
-        result = delete_sale(
-            transaction_id
-        )
-
-        if result == "Transaction not found.":
-
-            raise HTTPException(
-                status_code=404,
-                detail="Transaction not found"
+            date = gr.Textbox(
+                label="Date",
+                placeholder="YYYY-MM-DD"
             )
 
-        return {
-            "message": result
-        }
+            customer_id = gr.Textbox(
+                label="Customer ID",
+                placeholder="CUST001"
+            )
 
-    except HTTPException:
+        with gr.Row():
 
-        raise
+            gender = gr.Dropdown(
+                choices=["Male", "Female"],
+                label="Gender"
+            )
 
-    except Exception as e:
+            age = gr.Number(
+                label="Age",
+                precision=0
+            )
 
-        raise HTTPException(
-            status_code=400,
-            detail=str(e)
+            product_category = gr.Dropdown(
+                choices=[
+                    "Beauty",
+                    "Clothing",
+                    "Electronics"
+                ],
+                label="Product Category"
+            )
+
+        with gr.Row():
+
+            quantity = gr.Number(
+                label="Quantity",
+                precision=0
+            )
+
+            price_per_unit = gr.Number(
+                label="Price Per Unit"
+            )
+
+        add_button = gr.Button(
+            "Add Sale",
+            variant="primary"
+        )
+
+        add_result = gr.Textbox(
+            label="Result"
+        )
+
+        add_button.click(
+            fn=add_sale_ui,
+            inputs=[
+                transaction_id,
+                date,
+                customer_id,
+                gender,
+                age,
+                product_category,
+                quantity,
+                price_per_unit
+            ],
+            outputs=add_result
+        )
+
+        gr.Markdown("## 📋 All Sales")
+
+        view_button = gr.Button("Refresh Sales")
+
+        sales_table = gr.Dataframe(
+            label="Sales Data",
+            interactive=False
+        )
+
+        view_button.click(
+            fn=get_sales_ui,
+            outputs=sales_table
+        )
+
+        gr.Markdown("## ✏️ Update Sale")
+
+        update_transaction_id = gr.Number(
+            label="Transaction ID",
+            precision=0
+        )
+
+        update_quantity = gr.Number(
+            label="New Quantity",
+            precision=0
+        )
+
+        update_price = gr.Number(
+            label="New Price Per Unit"
+        )
+
+        update_button = gr.Button(
+            "Update Sale"
+        )
+
+        update_result = gr.Textbox(
+            label="Result"
+        )
+
+        update_button.click(
+            fn=update_sale_ui,
+            inputs=[
+                update_transaction_id,
+                update_quantity,
+                update_price
+            ],
+            outputs=update_result
+        )
+
+        gr.Markdown("## 🗑️ Delete Sale")
+
+        delete_transaction_id = gr.Number(
+            label="Transaction ID",
+            precision=0
+        )
+
+        delete_button = gr.Button(
+            "Delete Sale"
+        )
+
+        delete_result = gr.Textbox(
+            label="Result"
+        )
+
+        delete_button.click(
+            fn=delete_sale_ui,
+            inputs=delete_transaction_id,
+            outputs=delete_result
+        )
+
+    with gr.Tab("Search"):
+
+        gr.Markdown("## 🔎 Search Sales")
+
+        search_text = gr.Textbox(
+            label="Search",
+            placeholder="Enter transaction ID, customer ID, category or gender"
+        )
+
+        search_button = gr.Button(
+            "Search"
+        )
+
+        search_results = gr.Dataframe(
+            label="Search Results",
+            interactive=False
+        )
+
+        search_button.click(
+            fn=search_sales_ui,
+            inputs=search_text,
+            outputs=search_results
         )
 
 
-@app.get("/sales/search/{search_text}")
-def search_existing_sales(
-    search_text: str
-):
+app.launch()
 
-    try:
-
-        df = search_sales(
-            search_text
-        )
-
-        return df.to_dict(
-            orient="records"
-        )
-
-    except Exception as e:
-
-        raise HTTPException(
-            status_code=400,
-            detail=str(e)
-        )
-
-
-@app.get("/analytics/total-sales")
-def get_total_sales():
-
-    try:
-
-        total_sales = (
-            calculate_total_sales()
-        )
-
-        return {
-            "total_sales": total_sales
-        }
-
-    except Exception as e:
-
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
-
-
-
-@app.get("/analytics/total-quantity")
-def get_total_quantity():
-
-    try:
-
-        total_quantity = (
-            calculate_total_quantity()
-        )
-
-        return {
-            "total_quantity_sold":
-                total_quantity
-        }
-
-    except Exception as e:
-
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
-
-
-@app.get("/analytics/best-selling")
-def get_best_selling():
-
-    try:
-
-        df = best_selling_categories()
-
-        return df.to_dict(
-            orient="records"
-        )
-
-    except Exception as e:
-
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
-
-
-@app.get("/analytics/slow-moving")
-def get_slow_moving():
-
-    try:
-
-        df = slow_moving_categories()
-
-        return df.to_dict(
-            orient="records"
-        )
-
-    except Exception as e:
-
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
-
-
-@app.get("/analytics/category-sales")
-def get_category_sales():
-
-    try:
-
-        df = sales_by_category()
-
-        return df.to_dict(
-            orient="records"
-        )
-
-    except Exception as e:
-
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
-
-
-@app.get("/analytics/monthly-sales")
-def get_monthly_sales():
-
-    try:
-
-        df = monthly_sales()
-
-        return df.to_dict(
-            orient="records"
-        )
-
-    except Exception as e:
-
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
-
-
-@app.get("/analytics/summary")
-def get_analytics_summary():
-
-    try:
-
-        total_sales = (
-            calculate_total_sales()
-        )
-
-        total_quantity = (
-            calculate_total_quantity()
-        )
-
-        best_selling = (
-            best_selling_categories()
-        )
-
-        slow_moving = (
-            slow_moving_categories()
-        )
-
-        category_sales = (
-            sales_by_category()
-        )
-
-        monthly = (
-            monthly_sales()
-        )
-
-        return {
-
-            "total_sales":
-                total_sales,
-
-            "total_quantity_sold":
-                total_quantity,
-
-            "best_selling_categories":
-                best_selling.to_dict(
-                    orient="records"
-                ),
-
-            "slow_moving_categories":
-                slow_moving.to_dict(
-                    orient="records"
-                ),
-
-            "sales_by_category":
-                category_sales.to_dict(
-                    orient="records"
-                ),
-
-            "monthly_sales":
-                monthly.to_dict(
-                    orient="records"
-                )
-        }
-
-    except Exception as e:
-
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
-        )
-import gradio as gr
-from app import app as gradio_app
-
-app = gr.mount_gradio_app(
-    app,
-    gradio_app,
-    path="/"
-)
