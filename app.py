@@ -11,51 +11,31 @@ from api_client import (
 )
 
 
-
-
 def dataframe_from_json(data):
-
     return pd.DataFrame(data)
 
 
-
-
 def refresh_dashboard():
-
     try:
-
         data = get_summary()
 
-        total_sales = data[
-            "total_sales"
-        ]
-
-        total_quantity = data[
-            "total_quantity_sold"
-        ]
+        total_sales = data["total_sales"]
+        total_quantity = data["total_quantity_sold"]
 
         best_selling = dataframe_from_json(
-            data[
-                "best_selling_categories"
-            ]
+            data["best_selling_categories"]
         )
 
         slow_moving = dataframe_from_json(
-            data[
-                "slow_moving_categories"
-            ]
+            data["slow_moving_categories"]
         )
 
         category_sales = dataframe_from_json(
-            data[
-                "sales_by_category"
-            ]
+            data["sales_by_category"]
         )
 
         monthly_sales = dataframe_from_json(
-            data[
-                "monthly_sales"
-            ]
+            data["monthly_sales"]
         )
 
         return (
@@ -68,7 +48,6 @@ def refresh_dashboard():
         )
 
     except Exception as e:
-
         error_df = pd.DataFrame({
             "Error": [str(e)]
         })
@@ -83,8 +62,6 @@ def refresh_dashboard():
         )
 
 
-
-
 def add_sale_ui(
     transaction_id,
     date,
@@ -95,9 +72,7 @@ def add_sale_ui(
     quantity,
     price_per_unit
 ):
-
     try:
-
         result = create_sale(
             int(transaction_id),
             date,
@@ -112,27 +87,18 @@ def add_sale_ui(
         return result["message"]
 
     except Exception as e:
-
         return f"Error: {e}"
 
 
-
-
 def get_sales_ui():
-
     try:
-
         data = get_sales()
-
         return pd.DataFrame(data)
 
     except Exception as e:
-
         return pd.DataFrame({
             "Error": [str(e)]
         })
-
-
 
 
 def update_sale_ui(
@@ -140,9 +106,7 @@ def update_sale_ui(
     quantity,
     price_per_unit
 ):
-
     try:
-
         result = update_sale(
             int(transaction_id),
             int(quantity),
@@ -152,16 +116,11 @@ def update_sale_ui(
         return result["message"]
 
     except Exception as e:
-
         return f"Error: {e}"
 
 
-
-
 def delete_sale_ui(transaction_id):
-
     try:
-
         result = delete_sale(
             int(transaction_id)
         )
@@ -169,30 +128,22 @@ def delete_sale_ui(transaction_id):
         return result["message"]
 
     except Exception as e:
-
         return f"Error: {e}"
-        
+
+
 def search_sales_ui(search_text):
-
     try:
-
         if not search_text:
-
             return get_sales_ui()
 
-        data = search_sales(
-            search_text
-        )
+        data = search_sales(search_text)
 
         return pd.DataFrame(data)
 
     except Exception as e:
-
         return pd.DataFrame({
             "Error": [str(e)]
         })
-
-
 
 
 with gr.Blocks(
@@ -208,21 +159,21 @@ with gr.Blocks(
         """
     )
 
-with gr.Tab("📊 Dashboard"):
+    with gr.Tab("📊 Dashboard"):
 
         gr.Markdown(
             "## Sales Overview"
         )
+
         total_sales_display = gr.Textbox(
-                label="Total Sales",
-                interactive=False
+            label="Total Sales",
+            interactive=False
         )
 
         total_quantity_display = gr.Textbox(
-                label="Total Quantity Sold",
-                interactive=False
+            label="Total Quantity Sold",
+            interactive=False
         )
-
 
         gr.Markdown(
             "### Best-Selling Categories"
@@ -232,7 +183,6 @@ with gr.Tab("📊 Dashboard"):
             interactive=False
         )
 
-
         gr.Markdown(
             "### Slow-Moving Categories"
         )
@@ -240,7 +190,6 @@ with gr.Tab("📊 Dashboard"):
         slow_moving_table = gr.Dataframe(
             interactive=False
         )
-
 
         gr.Markdown(
             "### Sales by Category"
@@ -250,7 +199,6 @@ with gr.Tab("📊 Dashboard"):
             interactive=False
         )
 
-
         gr.Markdown(
             "### Monthly Sales"
         )
@@ -259,11 +207,9 @@ with gr.Tab("📊 Dashboard"):
             interactive=False
         )
 
-
         refresh_dashboard_button = gr.Button(
             "🔄 Refresh Dashboard"
         )
-
 
         refresh_dashboard_button.click(
             fn=refresh_dashboard,
@@ -277,10 +223,8 @@ with gr.Tab("📊 Dashboard"):
             ]
         )
 
+    with gr.Tab("🛍️ Sales"):
 
-with gr.Tab("🛍️ Sales"):
-
-        
         gr.Markdown(
             "## Add New Sale"
         )
@@ -299,7 +243,6 @@ with gr.Tab("🛍️ Sales"):
             add_customer_id = gr.Textbox(
                 label="Customer ID"
             )
-
 
         with gr.Row():
 
@@ -324,7 +267,6 @@ with gr.Tab("🛍️ Sales"):
                 label="Product Category"
             )
 
-
         with gr.Row():
 
             add_quantity = gr.Number(
@@ -335,7 +277,6 @@ with gr.Tab("🛍️ Sales"):
                 label="Price Per Unit"
             )
 
-
         add_button = gr.Button(
             "➕ Add Sale"
         )
@@ -343,7 +284,6 @@ with gr.Tab("🛍️ Sales"):
         add_result = gr.Textbox(
             label="Result"
         )
-
 
         add_button.click(
             fn=add_sale_ui,
@@ -360,9 +300,6 @@ with gr.Tab("🛍️ Sales"):
             outputs=add_result
         )
 
-
-
-
         gr.Markdown(
             "## All Sales"
         )
@@ -375,12 +312,11 @@ with gr.Tab("🛍️ Sales"):
             interactive=False
         )
 
-
         refresh_sales_button.click(
             fn=get_sales_ui,
             outputs=sales_table
         )
-       
+
         gr.Markdown(
             "## Update Sale"
         )
@@ -399,7 +335,6 @@ with gr.Tab("🛍️ Sales"):
                 label="New Price Per Unit"
             )
 
-
         update_button = gr.Button(
             "✏️ Update Sale"
         )
@@ -407,7 +342,6 @@ with gr.Tab("🛍️ Sales"):
         update_result = gr.Textbox(
             label="Result"
         )
-
 
         update_button.click(
             fn=update_sale_ui,
@@ -419,7 +353,6 @@ with gr.Tab("🛍️ Sales"):
             outputs=update_result
         )
 
-       
         gr.Markdown(
             "## Delete Sale"
         )
@@ -436,7 +369,6 @@ with gr.Tab("🛍️ Sales"):
             label="Result"
         )
 
-
         delete_button.click(
             fn=delete_sale_ui,
             inputs=[
@@ -445,7 +377,7 @@ with gr.Tab("🛍️ Sales"):
             outputs=delete_result
         )
 
-with gr.Tab("🔎 Search"):
+    with gr.Tab("🔎 Search"):
 
         gr.Markdown(
             """
@@ -456,22 +388,18 @@ with gr.Tab("🔎 Search"):
             """
         )
 
-
         search_input = gr.Textbox(
             label="Search",
             placeholder="Example: CUST001, Beauty, Male or 10"
         )
 
-
         search_button = gr.Button(
             "🔎 Search"
         )
 
-
         search_results = gr.Dataframe(
             interactive=False
         )
-
 
         search_button.click(
             fn=search_sales_ui,
@@ -479,13 +407,19 @@ with gr.Tab("🔎 Search"):
             outputs=search_results
         )
 
+
 if __name__ == "__main__":
     import os
 
-    port = int(os.environ.get("PORT", 7860))
+    port = int(
+        os.environ.get(
+            "PORT",
+            7860
+        )
+    )
 
     app.launch(
         server_name="0.0.0.0",
         server_port=port
     )
-    
+
