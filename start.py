@@ -19,6 +19,9 @@ api_process = subprocess.Popen(
 
 time.sleep(5)
 
+if api_process.poll() is not None:
+    raise RuntimeError("FastAPI process failed to start")
+
 try:
     port = os.environ.get("PORT", "7860")
 
