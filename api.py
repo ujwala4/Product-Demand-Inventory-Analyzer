@@ -417,5 +417,5 @@ from app import app as gradio_app
 app = gr.mount_gradio_app(
     app,
     gradio_app,
-    path="/"
+    path="/gradio"
 )
