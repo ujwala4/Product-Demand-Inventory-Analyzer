@@ -1,8 +1,9 @@
 import os
 import subprocess
-import sys
 import time
+import sys
 
+port = os.environ.get("PORT", "8000")
 
 api_process = subprocess.Popen(
     [
@@ -11,32 +12,21 @@ api_process = subprocess.Popen(
         "uvicorn",
         "api:app",
         "--host",
-        "127.0.0.1",
+        "0.0.0.0",
         "--port",
-        "8000"
+        port
     ]
 )
 
-time.sleep(5)
-
-if api_process.poll() is not None:
-    raise RuntimeError("FastAPI process failed to start")
+time.sleep(3)
 
 try:
-    port = os.environ.get("PORT", "7860")
-
     subprocess.run(
         [
             sys.executable,
             "app.py"
         ],
-        check=True,
-        env={
-            **os.environ,
-            "PORT": port
-        }
+        check=True
     )
-
 finally:
     api_process.terminate()
-    api_process.wait()
