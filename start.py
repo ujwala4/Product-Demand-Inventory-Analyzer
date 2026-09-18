@@ -1,6 +1,8 @@
+import os
 import subprocess
-import time
 import sys
+import time
+
 
 api_process = subprocess.Popen(
     [
@@ -15,17 +17,23 @@ api_process = subprocess.Popen(
     ]
 )
 
-time.sleep(3)
+time.sleep(5)
 
 try:
+    port = os.environ.get("PORT", "7860")
+
     subprocess.run(
         [
             sys.executable,
             "app.py"
         ],
-        check=True
+        check=True,
+        env={
+            **os.environ,
+            "PORT": port
+        }
     )
-
 
 finally:
     api_process.terminate()
+    api_process.wait()
